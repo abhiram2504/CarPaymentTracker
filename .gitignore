@@ -3,6 +3,9 @@
 # dependencies
 node_modules/
 
+CarPaymentTracker.sol
+.env
+
 # Expo
 .expo/
 dist/
