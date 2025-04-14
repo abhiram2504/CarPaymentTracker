@@ -1,11 +1,12 @@
 // src/screens/RecordRentalScreen.js
 import 'react-native-get-random-values'; // Required for ethers.js in React Native
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { ethers } from 'ethers';
 import { PRIVATE_KEY, RPC_URL, CONTRACT_ADDRESS } from '@env';
 // IMPORTANT: Ensure your ABI file contains the recordRental function with six parameters.
 import CarRentalMarketplaceABI from '../contracts/CarPaymentTracker.json';
+
 
 export default function RecordRentalScreen() {
   const [carMake, setCarMake] = useState('');
@@ -17,6 +18,12 @@ export default function RecordRentalScreen() {
   const [message, setMessage] = useState('');
 
   const recordRental = async () => {
+
+    if (isSending) return; 
+    setIsSending(true);
+    setMessage('Sending transaction...');
+
+
     try {
       // For ethers v6, use: new ethers.JsonRpcProvider(RPC_URL);
       // For ethers v5, use: new ethers.providers.JsonRpcProvider(RPC_URL);
@@ -32,6 +39,9 @@ export default function RecordRentalScreen() {
       const durationInDays = parseInt(rentalDuration);
       const priceInWei = ethers.parseEther(rentalPrice);
 
+      // Inform the user the transaction is being sent
+      setMessage('Sending transaction...');
+
       // Call the recordRental function on the contract with six parameters.
       const tx = await contract.recordRental(
         carMake,
@@ -42,9 +52,13 @@ export default function RecordRentalScreen() {
         priceInWei
       );
       console.log('Transaction sent:', tx.hash);
+      setMessage(`Transaction sent! Hash: ${tx.hash}`);
+
+      // Wait for confirmation
       await tx.wait();
       console.log('Transaction confirmed');
       setMessage('Rental recorded on blockchain!');
+      
     } catch (error) {
       console.error('Error recording rental:', error);
       setMessage('Error recording rental on blockchain.');
